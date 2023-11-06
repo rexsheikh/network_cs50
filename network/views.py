@@ -1,4 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.http import JsonResponse
@@ -14,29 +16,17 @@ class PostForm(forms.Form):
 
 
 def index(request):
-    # # a new post was submitted from index
-    # if request.method == "POST":
-    #     postForm = PostForm(request.POST)
-    #     if postForm.is_valid():
-    #         poster = User.objects.get(id=request.user.id)
-    #         content = postForm.cleaned_data["content"]
-    #         newPost = Post(poster=poster, content=content)
-    #         newPost.save()
-    # elif request.method == "PUT":
-    #     pass
+    if request.user.is_authenticated:
+        return render(request, "network/posts.html")
+    else:
+        return HttpResponseRedirect(reverse("login"))
 
+
+@login_required
+def posts(request):
     if request.method == "GET":
         posts = Post.objects.order_by("-timestamp").all()
         return JsonResponse([post.serialize() for post in posts], safe=False)
-
-    # if request.user.is_authenticated:
-    #     allPosts = Post.objects.all()
-    #     return render(request, "network/index.html", {
-    #         "allPosts": allPosts,
-    #         "PostForm": PostForm()
-    #     })
-    # else:
-    #     return HttpResponseRedirect(reverse("login"))
 
 
 def login_view(request):
