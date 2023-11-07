@@ -15,37 +15,50 @@ function getPosts(){
 }
 
 function buildPosts(data){
-    const postView = document.getElementById('posts-view');
+    const postView = document.getElementById('all-posts-view');
     posts = data.posts
     posts.forEach(post =>{
         const postDiv = document.createElement('div')
-        postDiv.innerHTML = `
-        <div class="border border-primary p-3">
+        if (data.requestorId === post.posterId){
+            postDiv.innerHTML = `
+            <div class="border border-primary p-3">
+                <div class = "container-fluid post-view">
+                    <h4>${post.posterName}</h4>
+                    <p class='content'>${post.content}</p>
+                    <button class="btn btn-info btn-sm edit-post-btn">Edit Post</button>
+                </div>
+                <div class="container-fluid edit-view">
+                    <textarea class="edit-post-field"></textarea>
+                    <div>
+                        <button class="btn btn-success btn-sm save-edit">Save Changes</button>
+                        <button class="btn btn-danger btn-sm discard-edit">Discard Changes</button>
+                    </div>
+                </div>
+                <p>${post.timestamp}</p>
+            </div>
+        `;
+        
+        const editBtn = postDiv.querySelector('.edit-post-btn');
+        const editView = postDiv.querySelector('.edit-view');
+        const postId = post.id;
+    
+        editBtn.addEventListener('click',function(e){
+            e.preventDefault();
+            const postView = postDiv.querySelector('.post-view');
+            showEdit(postView,editView,postId);
+    
+        });
+        }else{
+            postDiv.innerHTML = `
+            <div class="border border-primary p-3">
             <div class = "container-fluid post-view">
                 <h4>${post.posterName}</h4>
                 <p class='content'>${post.content}</p>
-                <button class="btn btn-info btn-sm edit-post-btn">Edit Post</button>
+                <p>${post.timestamp}</p>
             </div>
-            <div class="container-fluid edit-view">
-                <textarea class="edit-post-field"></textarea>
-                <div>
-                    <button class="btn btn-success btn-sm save-edit">Save Changes</button>
-                    <button class="btn btn-danger btn-sm discard-edit">Discard Changes</button>
-                </div>
-            </div>
-            <p>${post.timestamp}</p>
         </div>
-    `;
-    const editBtn = postDiv.querySelector('.edit-post-btn');
-    const editView = postDiv.querySelector('.edit-view');
-    const postId = post.id;
-
-    editBtn.addEventListener('click',function(e){
-        e.preventDefault();
-        const postView = postDiv.querySelector('.post-view');
-        showEdit(postView,editView,postId);
-
-    })
+            `;
+        }
     postView.append(postDiv);
     })
 }
@@ -85,13 +98,14 @@ function showEdit(postView,editView,postId){
    
 }
 
+// I referenced https://stackoverflow.com/questions/43606056/proper-django-csrf-validation-using-fetch-post-request
+// to see how to add a csrf token to the put request
 function saveEdit(postId,newContent){
-    console.log(`saving postId: ${postId} content: ${newContent}`);
     fetch('/posts',{
         method:'PUT',
         body:JSON.stringify({
             'postId':postId,
             'content':newContent
-        })
+        }),
     })
 }
