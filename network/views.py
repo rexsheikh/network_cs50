@@ -31,7 +31,9 @@ def posts(request):
         data = json.loads(request.body)
         postId = data.get("postId")
         content = data.get("content")
+        print(f'postId: {postId} content: {content}')
         post = Post.objects.get(id=postId)
+        print(f'post object id: {post.id}')
         post.content = content
         post.save()
         return HttpResponse(status=204)

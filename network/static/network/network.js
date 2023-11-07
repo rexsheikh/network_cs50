@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded',function(){
+    console.log('DOM loading....');
     getPosts();
 })
 
@@ -19,8 +20,8 @@ function buildPosts(data){
     posts.forEach(post =>{
         const postDiv = document.createElement('div')
         postDiv.innerHTML = `
-        <div class="border border-primary p-3 post-view">
-            <div class = "container-fluid show-view">
+        <div class="border border-primary p-3">
+            <div class = "container-fluid post-view">
                 <h4>${post.posterName}</h4>
                 <p class='content'>${post.content}</p>
                 <button class="btn btn-info btn-sm edit-post-btn">Edit Post</button>
@@ -32,7 +33,6 @@ function buildPosts(data){
                     <button class="btn btn-danger btn-sm discard-edit">Discard Changes</button>
                 </div>
             </div>
-
             <p>${post.timestamp}</p>
         </div>
     `;
@@ -42,8 +42,8 @@ function buildPosts(data){
 
     editBtn.addEventListener('click',function(e){
         e.preventDefault();
-        const showView = postDiv.querySelector('.show-view');
-        showEdit(showView,editView,postId);
+        const postView = postDiv.querySelector('.post-view');
+        showEdit(postView,editView,postId);
 
     })
     postView.append(postDiv);
@@ -57,42 +57,41 @@ function hideEdit(){
     })
 }
 
-function showContent(){
-    const postDivs = document.querySelectorAll('.post-view');
-    postDivs.forEach(div => {
-        div.style.display = 'block';
-    })
+function showContent(postView,content){
+    postView.querySelector('.content').textContent = content;
+    postView.style.display = 'block';
 }
 
-function showEdit(showView,editView,postId){
-    const textContent = showView.querySelector('.content').textContent;
-    showView.style.display = 'none';
+function showEdit(postView,editView,postId){
+    const textContent = postView.querySelector('.content').textContent;
+    postView.style.display = 'none';
 
     const textEdit = editView.querySelector('.edit-post-field');
     textEdit.value = textContent;
-
     editView.style.display = 'block';
     editView.querySelector('.save-edit').addEventListener('click',function(e){
-        // console.log(`postId: ${postId}  content: ${textContent}`);
         e.preventDefault();
-        saveEdit(postId,textContent);
+        const newTextContent = editView.querySelector('.edit-post-field').value;
+        console.log(`new text content: ${newTextContent}`);
+        saveEdit(postId,newTextContent);
         hideEdit();
+        showContent(postView,newTextContent);
     })
     editView.querySelector('.discard-edit').addEventListener('click',function(e){
         e.preventDefault();
         hideEdit();
-        showContent();
+        showContent(postView,textContent);
     })
    
 }
 
-function saveEdit(postId,content){
-    console.log('saving');
+function saveEdit(postId,newContent){
+    console.log(`saving postId: ${postId} content: ${newContent}`);
     fetch('/posts',{
         method:'PUT',
         body:JSON.stringify({
             'postId':postId,
-            'content':content
+            'content':newContent
         })
     })
 }
