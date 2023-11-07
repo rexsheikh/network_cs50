@@ -1,3 +1,4 @@
+import json
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -23,10 +24,23 @@ def index(request):
 
 
 @login_required
+@csrf_exempt
 def posts(request):
     if request.method == "GET":
         posts = Post.objects.order_by("-timestamp").all()
-        return JsonResponse([post.serialize() for post in posts], safe=False)
+        requestorId = request.user.id
+        data = {"requestorId": requestorId,
+                "posts": [post.serialize() for post in posts]
+                }
+        return JsonResponse(data, safe=False)
+    elif request.method == "PUT":
+        data = json.loads(request.body)
+        postId = data.get("postId")
+        content = data.get("content")
+        post = Post.objects.get(id=postId)
+        post.content = content
+        post.save()
+        return HttpResponse(status=204)
 
 
 def login_view(request):
