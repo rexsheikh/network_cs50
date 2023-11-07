@@ -40,7 +40,8 @@ function buildPosts(data){
     const editView = postDiv.querySelector('.edit-view');
     const postId = post.id;
 
-    editBtn.addEventListener('click',function(){
+    editBtn.addEventListener('click',function(e){
+        e.preventDefault();
         const showView = postDiv.querySelector('.show-view');
         showEdit(showView,editView,postId);
 
@@ -71,12 +72,14 @@ function showEdit(showView,editView,postId){
     textEdit.value = textContent;
 
     editView.style.display = 'block';
-    editView.querySelector('.save-edit').addEventListener('click',function(){
+    editView.querySelector('.save-edit').addEventListener('click',function(e){
         // console.log(`postId: ${postId}  content: ${textContent}`);
+        e.preventDefault();
         saveEdit(postId,textContent);
         hideEdit();
     })
-    editView.querySelector('.discard-edit').addEventListener('click',function(){
+    editView.querySelector('.discard-edit').addEventListener('click',function(e){
+        e.preventDefault();
         hideEdit();
         showContent();
     })
@@ -84,12 +87,12 @@ function showEdit(showView,editView,postId){
 }
 
 function saveEdit(postId,content){
-    // console.log('saving');
-    fetch('/posts'),{
+    console.log('saving');
+    fetch('/posts',{
         method:'PUT',
         body:JSON.stringify({
             'postId':postId,
             'content':content
         })
-    }
+    })
 }
