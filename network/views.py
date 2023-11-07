@@ -24,10 +24,9 @@ def index(request):
 
 
 @login_required
-@csrf_exempt
+# @csrf_exempt
 def posts(request):
     if request.method == "PUT":
-        print('****PUT******')
         data = json.loads(request.body)
         postId = data.get("postId")
         content = data.get("content")
@@ -38,13 +37,18 @@ def posts(request):
         post.save()
         return HttpResponse(status=204)
     elif request.method == "GET":
-        print('****GET******')
         posts = Post.objects.order_by("-timestamp").all()
         requestorId = request.user.id
         data = {"requestorId": requestorId,
                 "posts": [post.serialize() for post in posts]
                 }
         return JsonResponse(data, safe=False)
+    elif request.method == "POST":
+        content = request.POST.get('content')
+        poster = User.objects.get(id=request.user.id)
+        newPost = Post(poster=poster, content=content)
+        newPost.save()
+        return HttpResponseRedirect(reverse("index"))
 
 
 def login_view(request):
