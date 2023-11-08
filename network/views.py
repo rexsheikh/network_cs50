@@ -26,30 +26,36 @@ def index(request):
 
 @login_required
 @csrf_exempt
-def posts(request):
-    if request.method == "GET":
-        posts = Post.objects.order_by("-timestamp").all()
-        requestorId = request.user.id
-        data = {"requestorId": requestorId,
-                "posts": [post.serialize() for post in posts]
-                }
-        return JsonResponse(data, safe=False)
-    elif request.method == "PUT":
-        data = json.loads(request.body)
-        postId = data.get("postId")
-        content = data.get("content")
-        print(f'postId: {postId} content: {content}')
-        post = Post.objects.get(id=postId)
-        print(f'post object id: {post.id}')
-        post.content = content
-        post.save()
-        return HttpResponse(status=204)
-    elif request.method == "POST":
-        content = request.POST.get('content')
-        poster = User.objects.get(id=request.user.id)
-        newPost = Post(poster=poster, content=content)
-        newPost.save()
-        return HttpResponseRedirect(reverse("index"))
+def posts(request, postList):
+    if postList == "allPosts":
+        if request.method == "GET":
+            posts = Post.objects.order_by("-timestamp").all()
+            requestorId = request.user.id
+            data = {"requestorId": requestorId,
+                    "posts": [post.serialize() for post in posts]
+                    }
+            return JsonResponse(data, safe=False)
+        elif request.method == "PUT":
+            data = json.loads(request.body)
+            postId = data.get("postId")
+            content = data.get("content")
+            print(f'postId: {postId} content: {content}')
+            post = Post.objects.get(id=postId)
+            print(f'post object id: {post.id}')
+            post.content = content
+            post.save()
+            return HttpResponse(status=204)
+        elif request.method == "POST":
+            data = json.loads(request.body)
+            content = data.get("content")
+            poster = User.objects.get(id=request.user.id)
+            newPost = Post(poster=poster, content=content)
+            newPost.save()
+            return render(request, "network/posts.html")
+    elif postList == "profilePage":
+        pass
+    elif postList == "following":
+        pass
 
 
 def login_view(request):

@@ -1,11 +1,15 @@
 document.addEventListener('DOMContentLoaded',function(){
     console.log('DOM loading....');
-    getPosts();
+    document.getElementById("compose-post-btn").addEventListener('click',function(){
+        const content = document.getElementById("post-content").value;
+        submitPost(content);
+    })
+    getPosts("allPosts");
 })
 
 
-function getPosts(){
-    fetch('/posts')
+function getPosts(postList){
+    fetch(`posts/${postList}`)
     .then(response => response.json())
     .then(data =>{
         console.log(data);
@@ -13,6 +17,23 @@ function getPosts(){
         hideEdit();
     })
 }
+
+function submitPost(content){
+    fetch('/posts/allPosts', {
+        method: 'POST',
+        body: JSON.stringify({
+            content: content
+        })
+      })
+      .then(response => response.json())
+      .then(result => {
+          // Print result
+          console.log(result);
+          getPosts('allPosts');
+      });
+    };
+
+
 
 function buildPosts(data){
     const postView = document.getElementById('all-posts-view');
@@ -101,7 +122,7 @@ function showEdit(postView,editView,postId){
 // I referenced https://stackoverflow.com/questions/43606056/proper-django-csrf-validation-using-fetch-post-request
 // to see how to add a csrf token to the put request
 function saveEdit(postId,newContent){
-    fetch('/posts',{
+    fetch('/posts/allPosts',{
         method:'PUT',
         body:JSON.stringify({
             'postId':postId,

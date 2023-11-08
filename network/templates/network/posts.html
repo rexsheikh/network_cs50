@@ -5,10 +5,9 @@
 <h1>All Posts</h1>
 <div class="container-fluid border border-primary p-3">
     <h2>New Post</h2>
-    <form id="compose-post" method="post" action="{% url 'posts' %}">
-        {% csrf_token %}
-        <textarea class="form-control" name="content"></textarea>
-        <input type="submit" class="btn btn-info" />
+    <form>
+        <textarea class="form-control" id="post-content"></textarea>
+        <input type="submit" id="compose-post-btn" class="btn btn-info" />
     </form>
 </div>
 <div id="all-posts-view"></div>

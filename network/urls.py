@@ -10,5 +10,5 @@ urlpatterns = [
     path("register", views.register, name="register"),
 
     # API Routes
-    path("posts", views.posts, name="posts")
+    path("posts/<str:postList>", views.posts, name="posts")
 ]
