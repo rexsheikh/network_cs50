@@ -57,6 +57,20 @@ function getProfilePage(profileId){
     })
 }
 
+function follow(profileId){
+    fetch(`posts/profile/${parseInt(profileId)}`, {
+        method: 'POST',
+        body: JSON.stringify({
+            profileId:profileId
+        })
+      })
+      .then(response => response.json())
+      .then(result => {
+        console.log(result);
+        getPosts("allPosts");
+      })
+
+}
 
 function buildPosts(data,postList){
     // get the all-posts-divs, clear any existing html, and build according to 
@@ -70,13 +84,24 @@ function buildPosts(data,postList){
     }else if(postList === "profilePage"){
         if(data.myPage === true){
             headerDiv.innerHTML = `
-            <h2>TEST</h2>`
+            <h2>My Posts</h2>`
         }else{
             posterName = data.posts[0].posterName
+            profileId = data.posts[0].posterId
             headerDiv.innerHTML = `
             <h2>${posterName}'s Posts</h2>
+            <div>
+                <button class="btn btn-success btn-sm follow">Follow</button>
+                <button class="btn btn-danger btn-sm unfollow">Unfollow</button>
+            </div>
             `
-        };
+            headerDiv.querySelector(".follow").addEventListener('click',function(){
+                follow(profileId);
+            });
+            headerDiv.querySelector(".unfollow").addEventListener('click',function(){
+                //post an unfollow
+            });
+        }
     }
     postView.append(headerDiv);
     posts = data.posts

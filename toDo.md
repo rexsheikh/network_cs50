@@ -21,4 +21,5 @@ next...
 4. why is there a ? when submitting a new post?
 
 
---every posts needs an anchor that will go to their page
+-- conditionally load the follow unfollow buttons on visiting another user's posts 
+    -- using the myPage boolean, make the buttons with event listeners and add to the page

@@ -68,6 +68,7 @@ def posts(request, postList):
         pass
 
 
+@csrf_exempt
 def profilePosts(request, profileId):
     profileId = int(profileId)
     if request.method == "GET":
@@ -76,12 +77,19 @@ def profilePosts(request, profileId):
         else:
             myPage = False
         posts = Post.objects.filter(poster=profileId)
-    data = {
-        "myPage": myPage,
-        "requestorId": request.user.id,
-        "posts": [post.serialize() for post in posts]
-    }
-    return JsonResponse(data, safe=False)
+        data = {
+            "myPage": myPage,
+            "requestorId": request.user.id,
+            "posts": [post.serialize() for post in posts]
+        }
+        return JsonResponse(data, safe=False)
+    elif request.method == "POST":
+        data = json.loads(request.body)
+        followee = User.objects.get(id=profileId)
+        follower = User.objects.get(id=request.user.id)
+        newFollow = Follow(followee=followee, follower=follower)
+        newFollow.save()
+        return JsonResponse({"message": "Follow captured successfully."}, status=201)
 
 
 def login_view(request):
