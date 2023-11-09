@@ -68,8 +68,15 @@ function buildPosts(data,postList){
         headerDiv.innerHTML = `
         <h2>All Posts</h2>`
     }else if(postList === "profilePage"){
-        headerDiv.innerHTML = `
-        <h2>My Posts</h2>`
+        if(data.myPage === true){
+            headerDiv.innerHTML = `
+            <h2>TEST</h2>`
+        }else{
+            posterName = data.posts[0].posterName
+            headerDiv.innerHTML = `
+            <h2>${posterName}'s Posts</h2>
+            `
+        };
     }
     postView.append(headerDiv);
     posts = data.posts

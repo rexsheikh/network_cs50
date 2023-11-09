@@ -53,6 +53,8 @@ def posts(request, postList):
             newPost = Post(poster=poster, content=content)
             newPost.save()
             return JsonResponse({"message": "Post captured successfully."}, status=201)
+    # I think I can delete below if I have a separate view
+    # postList is consumed in js to make the fetch
     elif postList == "profilePage":
         if request.method == "GET":
             posts = Post.objects.filter(poster=request.user.id)
@@ -67,12 +69,15 @@ def posts(request, postList):
 
 
 def profilePosts(request, profileId):
-    print("***PROFILE PAGE****")
-    print(f"received profileId: {profileId}")
     profileId = int(profileId)
     if request.method == "GET":
+        if request.user.id == profileId:
+            myPage = True
+        else:
+            myPage = False
         posts = Post.objects.filter(poster=profileId)
     data = {
+        "myPage": myPage,
         "requestorId": request.user.id,
         "posts": [post.serialize() for post in posts]
     }
