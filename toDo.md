@@ -19,3 +19,6 @@ next...
 
 
 4. why is there a ? when submitting a new post?
+
+
+--every posts needs an anchor that will go to their page

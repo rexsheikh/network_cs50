@@ -27,6 +27,7 @@ def index(request):
 @login_required
 @csrf_exempt
 def posts(request, postList):
+    print("***posts view called***")
     if postList == "allPosts":
         if request.method == "GET":
             posts = Post.objects.order_by("-timestamp").all()
@@ -53,7 +54,6 @@ def posts(request, postList):
             newPost.save()
             return JsonResponse({"message": "Post captured successfully."}, status=201)
     elif postList == "profilePage":
-        print("***ProfilePage*****")
         if request.method == "GET":
             posts = Post.objects.filter(poster=request.user.id)
             data = {
@@ -64,6 +64,19 @@ def posts(request, postList):
 
     elif postList == "following":
         pass
+
+
+def profilePosts(request, profileId):
+    print("***PROFILE PAGE****")
+    print(f"received profileId: {profileId}")
+    profileId = int(profileId)
+    if request.method == "GET":
+        posts = Post.objects.filter(poster=profileId)
+    data = {
+        "requestorId": request.user.id,
+        "posts": [post.serialize() for post in posts]
+    }
+    return JsonResponse(data, safe=False)
 
 
 def login_view(request):

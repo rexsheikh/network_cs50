@@ -46,6 +46,16 @@ function submitPost(content){
           getPosts('allPosts');
       });
     };
+function getProfilePage(profileId){
+    console.log(profileId);
+    fetch(`posts/profile/${parseInt(profileId)}`)
+    .then(response => response.json())
+    .then(data =>{
+        console.log(data);
+        buildPosts(data,"profilePage");
+        hideEdit();
+    })
+}
 
 
 function buildPosts(data,postList){
@@ -69,7 +79,7 @@ function buildPosts(data,postList){
             postDiv.innerHTML = `
             <div class="border border-primary p-3">
                 <div class = "container-fluid post-view">
-                    <h4>${post.posterName}</h4>
+                    <h4 class = "poster-profile">${post.posterName}</h4>
                     <p class='content'>${post.content}</p>
                     <button class="btn btn-info btn-sm edit-post-btn">Edit Post</button>
                 </div>
@@ -94,17 +104,23 @@ function buildPosts(data,postList){
             showEdit(postView,editView,postId);
     
         });
+
         }else{
             postDiv.innerHTML = `
             <div class="border border-primary p-3">
             <div class = "container-fluid post-view">
-                <h4>${post.posterName}</h4>
+                <h4 class = "poster-profile">${post.posterName}</h4>
                 <p class='content'>${post.content}</p>
                 <p>${post.timestamp}</p>
             </div>
         </div>
             `;
         }
+
+    const posterProfile = postDiv.querySelector('.poster-profile');
+    posterProfile.addEventListener('click',function(){
+        getProfilePage(post.posterId);
+    })
     postView.append(postDiv);
     })
 }
