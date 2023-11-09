@@ -16,3 +16,6 @@ next...
 3. likes and unlikes 
     - any user can like any post 
     - do this asynchronously
+
+
+4. why is there a ? when submitting a new post?

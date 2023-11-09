@@ -4,16 +4,30 @@ document.addEventListener('DOMContentLoaded',function(){
         const content = document.getElementById("post-content").value;
         submitPost(content);
     })
-    getPosts("allPosts");
+
+    document.getElementById("nav-allposts").addEventListener('click',function(){
+        getPosts('allPosts');    
+    })
+
+    document.getElementById("nav-profile-page").addEventListener('click',function(){
+        // get posts for a user's profile page
+        getPosts('profilePage');
+    })
+
+    //get allPosts by default
+    getPosts('allPosts');
 })
 
+function hideAllPostsView(){
+    document.getElementById("all-posts-view").style.display = 'none'
+}
 
 function getPosts(postList){
     fetch(`posts/${postList}`)
     .then(response => response.json())
     .then(data =>{
         console.log(data);
-        buildPosts(data);
+        buildPosts(data,postList);
         hideEdit();
     })
 }
@@ -34,9 +48,20 @@ function submitPost(content){
     };
 
 
-
-function buildPosts(data){
+function buildPosts(data,postList){
+    // get the all-posts-divs, clear any existing html, and build according to 
+    // given postList
     const postView = document.getElementById('all-posts-view');
+    postView.innerHTML = ''
+    const headerDiv = document.createElement('div');
+    if(postList === "allPosts"){
+        headerDiv.innerHTML = `
+        <h2>All Posts</h2>`
+    }else if(postList === "profilePage"){
+        headerDiv.innerHTML = `
+        <h2>My Posts</h2>`
+    }
+    postView.append(headerDiv);
     posts = data.posts
     posts.forEach(post =>{
         const postDiv = document.createElement('div')

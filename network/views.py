@@ -51,9 +51,17 @@ def posts(request, postList):
             poster = User.objects.get(id=request.user.id)
             newPost = Post(poster=poster, content=content)
             newPost.save()
-            return render(request, "network/posts.html")
+            return JsonResponse({"message": "Post captured successfully."}, status=201)
     elif postList == "profilePage":
-        pass
+        print("***ProfilePage*****")
+        if request.method == "GET":
+            posts = Post.objects.filter(poster=request.user.id)
+            data = {
+                "requestorId": request.user.id,
+                "posts": [post.serialize() for post in posts]
+            }
+            return JsonResponse(data, safe=False)
+
     elif postList == "following":
         pass
 
