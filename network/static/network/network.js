@@ -58,9 +58,11 @@ function getProfilePage(profileId){
 }
 
 function follow(profileId){
+    const action = "follow"
     fetch(`posts/profile/${parseInt(profileId)}`, {
         method: 'POST',
         body: JSON.stringify({
+            action:action,
             profileId:profileId
         })
       })
@@ -69,7 +71,21 @@ function follow(profileId){
         console.log(result);
         getPosts("allPosts");
       })
-
+}
+function unfollow(profileId){
+    const action = "unfollow"
+    fetch(`posts/profile/${parseInt(profileId)}`, {
+        method: 'POST',
+        body: JSON.stringify({
+            action:action,
+            profileId:profileId
+        })
+      })
+      .then(response => response.json())
+      .then(result => {
+        console.log(result);
+        getPosts("allPosts");
+      })
 }
 
 function buildPosts(data,postList){
@@ -99,7 +115,7 @@ function buildPosts(data,postList){
                 follow(profileId);
             });
             headerDiv.querySelector(".unfollow").addEventListener('click',function(){
-                //post an unfollow
+                unfollow(profileId);
             });
         }
     }

@@ -85,11 +85,17 @@ def profilePosts(request, profileId):
         return JsonResponse(data, safe=False)
     elif request.method == "POST":
         data = json.loads(request.body)
+        action = data.get("action")
         followee = User.objects.get(id=profileId)
         follower = User.objects.get(id=request.user.id)
-        newFollow = Follow(followee=followee, follower=follower)
-        newFollow.save()
-        return JsonResponse({"message": "Follow captured successfully."}, status=201)
+        if action == "follow":
+            newFollow = Follow(followee=followee, follower=follower)
+            newFollow.save()
+            return JsonResponse({"message": "Follow captured successfully."}, status=201)
+        elif action == "unfollow":
+            follow = Follow.objects.get(followee=followee, follower=follower)
+            follow.delete()
+            return JsonResponse({"message": "Unfollow captured successfully."}, status=201)
 
 
 def login_view(request):
