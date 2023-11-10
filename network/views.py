@@ -75,10 +75,21 @@ def profilePosts(request, profileId):
         if request.user.id == profileId:
             myPage = True
         else:
+            # I referenced https://stackoverflow.com/questions/3090302/how-do-i-get-the-object-if-it-exists-or-none-if-it-does-not-exist-in-django
+            # to see how to use the first method to return None to follow status instead of writing a try/except
+            followee = User.objects.get(id=profileId)
+            follower = User.objects.get(id=request.user.id)
+            followStatus = Follow.objects.filter(
+                followee=followee, follower=follower).first()
+            if followStatus != None:
+                following = True
+            else:
+                following = False
             myPage = False
         posts = Post.objects.filter(poster=profileId)
         data = {
             "myPage": myPage,
+            "following": following,
             "requestorId": request.user.id,
             "posts": [post.serialize() for post in posts]
         }

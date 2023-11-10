@@ -14,8 +14,9 @@ document.addEventListener('DOMContentLoaded',function(){
         getPosts('profilePage');
     })
 
-    //get allPosts by default
+    //get allPosts by default and show the new post btn
     getPosts('allPosts');
+    
 })
 
 
@@ -26,6 +27,11 @@ function getPosts(postList){
         console.log(data);
         buildPosts(data,postList);
         hideEdit();
+        if(postList === "allPosts"){
+            showNewPostBtn();
+        }else{
+            hideNewPostBtn();
+        }
     })
 }
 
@@ -45,13 +51,13 @@ function submitPost(content){
     };
 
 function getProfilePage(profileId){
-    console.log(profileId);
     fetch(`posts/profile/${parseInt(profileId)}`)
     .then(response => response.json())
     .then(data =>{
         console.log(data);
         buildPosts(data,"profilePage");
         hideEdit();
+        hideNewPostBtn();
     })
 }
 
@@ -98,19 +104,28 @@ function buildHeader(data,postList){
         }else{
             posterName = data.posts[0].posterName
             profileId = data.posts[0].posterId
-            headerDiv.innerHTML = `
-            <h2>${posterName}'s Posts</h2>
-            <div>
-                <button class="btn btn-success btn-sm follow">Follow</button>
-                <button class="btn btn-danger btn-sm unfollow">Unfollow</button>
-            </div>
-            `
-            headerDiv.querySelector(".follow").addEventListener('click',function(){
-                follow(profileId);
-            });
-            headerDiv.querySelector(".unfollow").addEventListener('click',function(){
-                unfollow(profileId);
-            });
+            if(data.following === true){
+                headerDiv.innerHTML = `
+                <h2>${posterName}'s Posts</h2>
+                <div>
+                    <button class="btn btn-danger btn-sm unfollow">Unfollow</button>
+                </div>
+                `
+                headerDiv.querySelector(".unfollow").addEventListener('click',function(){
+                    unfollow(profileId);
+                });
+
+            }else{
+                headerDiv.innerHTML = `
+                <h2>${posterName}'s Posts</h2>
+                <div>
+                    <button class="btn btn-success btn-sm follow">Follow</button>
+                </div>
+                `
+                headerDiv.querySelector(".follow").addEventListener('click',function(){
+                    follow(profileId);
+                });
+            }
         }
     }
 
@@ -119,7 +134,7 @@ function buildHeader(data,postList){
 
 function buildPostWithEdit(post){
     const postDiv = document.createElement('div');
-    postDiv.classList.add('border','border-primary','p-3')
+    postDiv.classList.add('p-3');
     postDiv.innerHTML = `
     <div class="border border-primary p-3">
         <div class = "container-fluid post-view">
@@ -153,7 +168,7 @@ return postDiv;
 
 function buildPostNoEdit(post){
     const postDiv = document.createElement('div');
-    postDiv.classList.add('border','border-primary','p-3');
+    postDiv.classList.add('p-3');
     postDiv.innerHTML = `
     <div class="border border-primary p-3">
     <div class = "container-fluid post-view">
@@ -174,7 +189,8 @@ function buildPosts(data,postList){
     const header = buildHeader(data,postList);
     postView.append(header);
 
-    // get all the posts. 
+    // get all the posts. show edit button if the post belongs to the requestor
+    // add event listeners for visiting another user's page 
     posts = data.posts
     posts.forEach(post =>{
         var postDiv = document.createElement('div')
@@ -226,8 +242,6 @@ function showEdit(postView,editView,postId){
    
 }
 
-// I referenced https://stackoverflow.com/questions/43606056/proper-django-csrf-validation-using-fetch-post-request
-// to see how to add a csrf token to the put request
 function saveEdit(postId,newContent){
     fetch('/posts/allPosts',{
         method:'PUT',
@@ -236,4 +250,12 @@ function saveEdit(postId,newContent){
             'content':newContent
         }),
     })
+}
+
+function hideNewPostBtn(){
+    document.querySelector('.compose-post-view').style.display= 'none';
+}
+
+function showNewPostBtn(){
+    document.querySelector('.compose-post-view').style.display='block';
 }
