@@ -23,17 +23,41 @@ def index(request):
     else:
         return HttpResponseRedirect(reverse("login"))
 
+# helper function to append likes to corresponding posts
+
+
+def likesToPosts(likes, posts):
+    # get likes and posts, and map post_id to likes
+    likesDict = {}
+    for like in likes:
+        postId = like["post"]['id']
+        if postId not in likesDict:
+            likesDict[postId] = []
+            likesDict.append({
+                'id': like['id'],
+                'posterId': like['poster']['id'],
+                'likerId': like['liker']['id'],
+            })
+    # loop through posts. Try to get the array of like objects from
+    # the likes dict. Otherwise, append an empy array.
+    for post in posts:
+        post['likes'] = likesDict.get(post['id'], [])
+
+    return posts
+
 
 @login_required
 @csrf_exempt
 def posts(request, postList):
-    print("***posts view called***")
     if postList == "allPosts":
         if request.method == "GET":
-            posts = Post.objects.order_by("-timestamp").all()
+            posts = [post.serialize()
+                     for post in Post.objects.order_by("-timestamp").all()]
+            likes = [like.serialize() for like in Like.objects.all()]
+            postsWithLikes = likesToPosts(likes, posts)
             requestorId = request.user.id
             data = {"requestorId": requestorId,
-                    "posts": [post.serialize() for post in posts]
+                    "posts": postsWithLikes
                     }
             return JsonResponse(data, safe=False)
         elif request.method == "PUT":
@@ -53,19 +77,6 @@ def posts(request, postList):
             newPost = Post(poster=poster, content=content)
             newPost.save()
             return JsonResponse({"message": "Post captured successfully."}, status=201)
-    # I think I can delete below if I have a separate view
-    # postList is consumed in js to make the fetch
-    elif postList == "profilePage":
-        if request.method == "GET":
-            posts = Post.objects.filter(poster=request.user.id)
-            data = {
-                "requestorId": request.user.id,
-                "posts": [post.serialize() for post in posts]
-            }
-            return JsonResponse(data, safe=False)
-
-    elif postList == "following":
-        pass
 
 
 @csrf_exempt
@@ -74,9 +85,11 @@ def profilePosts(request, profileId):
     if request.method == "GET":
         if request.user.id == profileId:
             myPage = True
+            following = False
         else:
             # I referenced https://stackoverflow.com/questions/3090302/how-do-i-get-the-object-if-it-exists-or-none-if-it-does-not-exist-in-django
             # to see how to use the first method to return None to follow status instead of writing a try/except
+            myPage = False
             followee = User.objects.get(id=profileId)
             follower = User.objects.get(id=request.user.id)
             followStatus = Follow.objects.filter(
@@ -85,7 +98,7 @@ def profilePosts(request, profileId):
                 following = True
             else:
                 following = False
-            myPage = False
+
         posts = Post.objects.filter(poster=profileId)
         data = {
             "myPage": myPage,

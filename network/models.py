@@ -18,16 +18,25 @@ class Post(models.Model):
             "posterId": self.poster.id,
             "posterName": self.poster.username,
             "content": self.content,
-            "timestamp": self.timestamp.strftime("%b %d %Y, %I:%M %p")
+            "timestamp": self.timestamp.strftime("%b %d %Y, %I:%M %p"),
         }
 
 
 class Like(models.Model):
     id = models.IntegerField(primary_key=True)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
     poster = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="poster")
     liker = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="liker")
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "post_id": self.post.id,
+            "poster_id": self.poster.id,
+            "like_id": self.liker.id
+        }
 
 
 class Follow(models.Model):

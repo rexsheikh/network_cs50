@@ -98,6 +98,7 @@ function buildHeader(data,postList){
         headerDiv.innerHTML = `
         <h2>All Posts</h2>`
     }else if(postList === "profilePage"){
+        console.log(`my page boolean: ${data.myPage}`);
         if(data.myPage === true){
             headerDiv.innerHTML = `
             <h2>My Posts</h2>`
@@ -115,7 +116,7 @@ function buildHeader(data,postList){
                     unfollow(profileId);
                 });
 
-            }else{
+            }else if(data.following === false){
                 headerDiv.innerHTML = `
                 <h2>${posterName}'s Posts</h2>
                 <div>
