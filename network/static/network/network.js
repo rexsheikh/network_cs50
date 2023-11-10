@@ -18,9 +18,6 @@ document.addEventListener('DOMContentLoaded',function(){
     getPosts('allPosts');
 })
 
-function hideAllPostsView(){
-    document.getElementById("all-posts-view").style.display = 'none'
-}
 
 function getPosts(postList){
     fetch(`posts/${postList}`)
@@ -46,6 +43,7 @@ function submitPost(content){
           getPosts('allPosts');
       });
     };
+
 function getProfilePage(profileId){
     console.log(profileId);
     fetch(`posts/profile/${parseInt(profileId)}`)
@@ -88,11 +86,7 @@ function unfollow(profileId){
       })
 }
 
-function buildPosts(data,postList){
-    // get the all-posts-divs, clear any existing html, and build according to 
-    // given postList
-    const postView = document.getElementById('all-posts-view');
-    postView.innerHTML = ''
+function buildHeader(data,postList){
     const headerDiv = document.createElement('div');
     if(postList === "allPosts"){
         headerDiv.innerHTML = `
@@ -119,52 +113,76 @@ function buildPosts(data,postList){
             });
         }
     }
-    postView.append(headerDiv);
-    posts = data.posts
-    posts.forEach(post =>{
-        const postDiv = document.createElement('div')
-        if (data.requestorId === post.posterId){
-            postDiv.innerHTML = `
-            <div class="border border-primary p-3">
-                <div class = "container-fluid post-view">
-                    <h4 class = "poster-profile">${post.posterName}</h4>
-                    <p class='content'>${post.content}</p>
-                    <button class="btn btn-info btn-sm edit-post-btn">Edit Post</button>
-                </div>
-                <div class="container-fluid edit-view">
-                    <textarea class="edit-post-field"></textarea>
-                    <div>
-                        <button class="btn btn-success btn-sm save-edit">Save Changes</button>
-                        <button class="btn btn-danger btn-sm discard-edit">Discard Changes</button>
-                    </div>
-                </div>
-                <p>${post.timestamp}</p>
-            </div>
-        `;
-        
-        const editBtn = postDiv.querySelector('.edit-post-btn');
-        const editView = postDiv.querySelector('.edit-view');
-        const postId = post.id;
-    
-        editBtn.addEventListener('click',function(e){
-            e.preventDefault();
-            const postView = postDiv.querySelector('.post-view');
-            showEdit(postView,editView,postId);
-    
-        });
 
-        }else{
-            postDiv.innerHTML = `
-            <div class="border border-primary p-3">
-            <div class = "container-fluid post-view">
-                <h4 class = "poster-profile">${post.posterName}</h4>
-                <p class='content'>${post.content}</p>
-                <p>${post.timestamp}</p>
+    return headerDiv;
+}
+
+function buildPostWithEdit(post){
+    const postDiv = document.createElement('div');
+    postDiv.classList.add('border','border-primary','p-3')
+    postDiv.innerHTML = `
+    <div class="border border-primary p-3">
+        <div class = "container-fluid post-view">
+            <h4 class = "poster-profile">${post.posterName}</h4>
+            <p class='content'>${post.content}</p>
+            <button class="btn btn-info btn-sm edit-post-btn">Edit Post</button>
+        </div>
+        <div class="container-fluid edit-view">
+            <textarea class="edit-post-field"></textarea>
+            <div>
+                <button class="btn btn-success btn-sm save-edit">Save Changes</button>
+                <button class="btn btn-danger btn-sm discard-edit">Discard Changes</button>
             </div>
         </div>
-            `;
-        }
+        <p>${post.timestamp}</p>
+    </div>
+`;
 
+const editBtn = postDiv.querySelector('.edit-post-btn');
+const editView = postDiv.querySelector('.edit-view');
+const postId = post.id;
+
+editBtn.addEventListener('click',function(e){
+    e.preventDefault();
+    const postView = postDiv.querySelector('.post-view');
+    showEdit(postView,editView,postId);
+
+});
+return postDiv;
+}
+
+function buildPostNoEdit(post){
+    const postDiv = document.createElement('div');
+    postDiv.classList.add('border','border-primary','p-3');
+    postDiv.innerHTML = `
+    <div class="border border-primary p-3">
+    <div class = "container-fluid post-view">
+        <h4 class = "poster-profile">${post.posterName}</h4>
+        <p class='content'>${post.content}</p>
+        <p>${post.timestamp}</p>
+    </div>
+</div>
+    `;
+    return postDiv;
+
+}
+
+function buildPosts(data,postList){
+    // get the all-posts-divs, clear any existing html, and build header according to the postList
+    const postView = document.getElementById('all-posts-view');
+    postView.innerHTML = ''
+    const header = buildHeader(data,postList);
+    postView.append(header);
+
+    // get all the posts. 
+    posts = data.posts
+    posts.forEach(post =>{
+        var postDiv = document.createElement('div')
+        if (data.requestorId === post.posterId){
+            postDiv = buildPostWithEdit(post);
+        }else{
+            postDiv = buildPostNoEdit(post);
+        }
     const posterProfile = postDiv.querySelector('.poster-profile');
     posterProfile.addEventListener('click',function(){
         getProfilePage(post.posterId);
