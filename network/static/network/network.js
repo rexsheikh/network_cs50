@@ -6,14 +6,19 @@ document.addEventListener('DOMContentLoaded',function(){
     })
 
     document.getElementById("nav-allposts").addEventListener('click',function(){
-        getPosts('allPosts');    
+        getPosts('allPosts')
     })
 
     document.getElementById("nav-profile-page").addEventListener('click',function(){
         // get posts for a user's profile page
-        getPosts('profilePage');
+        const userId = this.getAttribute('data-userid');
+        getProfilePage(userId);   
     })
 
+    document.getElementById('nav-following').addEventListener('click',function(){
+        console.log('following');
+        getPosts('following');
+    })
     //get allPosts by default and show the new post btn
     getPosts('allPosts');
     
@@ -191,19 +196,20 @@ function buildLikeBtn(){
 
 function buildUnlikeBtn(){
     const unlikeBtn = document.createElement('button');
-    unlikeBtn.classList.add('btn','btn-success','btn-sm','unlike');
+    unlikeBtn.classList.add('btn','btn-danger','btn-sm','unlike');
     unlikeBtn.textContent = 'Unlike';
     return unlikeBtn;
 }
 
 function alreadyLiked(userId,post){
-    const likes = post.likes
+    const likes = post['likes']
+    var likedBool = false;
     likes.forEach(like =>{
-        if(like.likerId === userId){
-            return true;
+        if(like['likerId'] === userId){
+            likedBool = true;
         }
     })
-    return false;
+    return likedBool;
 }
 function postLike(postId){
     const action = "like"
@@ -237,6 +243,7 @@ function postUnlike(postId){
 }
 
 
+
 function buildPosts(data,postList){
     // get the all-posts-divs, clear any existing html, and build header according to the postList
     const postView = document.getElementById('all-posts-view');
@@ -248,6 +255,7 @@ function buildPosts(data,postList){
     // add event listeners for visiting another user's page 
     posts = data.posts
     posts.forEach(post =>{
+        console.log(post['likes']);
         var postDiv = document.createElement('div')
         if (data.requestorId === post.posterId){
             postDiv = buildPostWithEdit(post);
@@ -258,18 +266,22 @@ function buildPosts(data,postList){
             const unlikeBtn = buildUnlikeBtn();
             postDiv.appendChild(unlikeBtn);
             postDiv.querySelector('.unlike').addEventListener('click',function(){
-                console.log('unlike');
                 postUnlike(post.id);
             });
         }else{
             const likeBtn = buildLikeBtn();
             postDiv.appendChild(likeBtn);
             postDiv.querySelector('.like').addEventListener('click',function(){
-                console.log('like');
-                console.log(`postId: ${post.id}`);
                 postLike(post.id);
              });
         }
+    // get likes count for all post divs
+    const likesCount = post['likesCount'];
+    const likesCountDiv = document.createElement('p');
+    likesCountDiv.innerText = `Likes: ${likesCount}`;
+    postDiv.appendChild(likesCountDiv);
+
+    // set up links to other user's profiles
     const posterProfile = postDiv.querySelector('.poster-profile');
     posterProfile.addEventListener('click',function(){
         getProfilePage(post.posterId);

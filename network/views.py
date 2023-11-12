@@ -42,7 +42,7 @@ def likesToPosts(likes, posts):
     # the likes dict. Otherwise, append an empy array.
     for post in posts:
         post['likes'] = likesDict.get(post['id'], [])
-
+        post['likesCount'] = len(post['likes'])
     return posts
 
 
@@ -77,6 +77,18 @@ def posts(request, postList):
             newPost = Post(poster=poster, content=content)
             newPost.save()
             return JsonResponse({"message": "Post captured successfully."}, status=201)
+    elif postList == "following":
+        if request.method == "GET":
+            following = Follow.objects.filter(
+                follower=request.user.id).values_list('followee_id', flat=True)
+            posts = [post.serialize()
+                     for post in Post.objects.filter(poster_id__in=following)]
+            likes = [like.serialize() for like in Like.objects.all()]
+            postsWithLikes = likesToPosts(likes, posts)
+            data = {
+                'posts': postsWithLikes
+            }
+            return JsonResponse(data, safe=False)
 
 
 @csrf_exempt
@@ -99,12 +111,15 @@ def profilePosts(request, profileId):
             else:
                 following = False
 
-        posts = Post.objects.filter(poster=profileId)
+        posts = [post.serialize() for post in Post.objects.filter(
+            poster=profileId).order_by("-timestamp")]
+        likes = [like.serialize() for like in Like.objects.all()]
+        postsWithLikes = likesToPosts(likes, posts)
         data = {
             "myPage": myPage,
             "following": following,
             "requestorId": request.user.id,
-            "posts": [post.serialize() for post in posts]
+            "posts": postsWithLikes
         }
         return JsonResponse(data, safe=False)
     elif request.method == "POST":
@@ -120,6 +135,26 @@ def profilePosts(request, profileId):
             follow = Follow.objects.get(followee=followee, follower=follower)
             follow.delete()
             return JsonResponse({"message": "Unfollow captured successfully."}, status=201)
+
+
+@csrf_exempt
+def following(request):
+    # I referenced https://stackoverflow.com/questions/37205793/django-values-list-vs-values
+    # to see how to get a list that the user is following
+    # I referenced https://docs.djangoproject.com/en/3.2/topics/db/queries/
+    # to see how to make queries that span a list using the double underscore notation
+    if request.method == "GET":
+        print("FOLLOWING VIEW")
+        following = Follow.objects.filter(
+            follower=request.user.id).values_list('followee_id', flat=True)
+        posts = [post.serialize()
+                 for post in Post.objects.filter(poster_id__in=following)]
+        likes = [like.serialize() for like in Like.objects.all()]
+        postsWithLikes = likesToPosts(likes, posts)
+        data = {
+            'posts': postsWithLikes
+        }
+        return JsonResponse(data, safe=False)
 
 
 @csrf_exempt
