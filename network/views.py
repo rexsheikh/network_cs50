@@ -30,13 +30,13 @@ def likesToPosts(likes, posts):
     # get likes and posts, and map post_id to likes
     likesDict = {}
     for like in likes:
-        postId = like["post"]['id']
+        postId = like["post_id"]
         if postId not in likesDict:
             likesDict[postId] = []
-            likesDict.append({
+            likesDict[postId].append({
                 'id': like['id'],
-                'posterId': like['poster']['id'],
-                'likerId': like['liker']['id'],
+                'posterId': like['poster_id'],
+                'likerId': like['liker_id'],
             })
     # loop through posts. Try to get the array of like objects from
     # the likes dict. Otherwise, append an empy array.
@@ -120,6 +120,29 @@ def profilePosts(request, profileId):
             follow = Follow.objects.get(followee=followee, follower=follower)
             follow.delete()
             return JsonResponse({"message": "Unfollow captured successfully."}, status=201)
+
+
+@csrf_exempt
+def likes(request, postId):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        action = data.get("action")
+        post = Post.objects.get(id=postId)
+        poster = User.objects.get(id=post.poster.id)
+        liker = User.objects.get(id=request.user.id)
+        if action == "like":
+            # maybe check if already liked here?
+            newLike = Like(post=post, poster=poster, liker=liker)
+            newLike.save()
+            return JsonResponse({"message": "Like captured successfully."}, status=201)
+        elif action == "unlike":
+            like = Like.objects.filter(
+                post=postId, poster=poster, liker=liker).first()
+            if like != None:
+                like.delete()
+            return JsonResponse({"message": "Unlike captured successfully."}, status=201)
+        else:
+            return JsonResponse({"message": "No Like Exists."}, status=201)
 
 
 def login_view(request):

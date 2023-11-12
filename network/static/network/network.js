@@ -182,6 +182,60 @@ function buildPostNoEdit(post){
     return postDiv;
 
 }
+function buildLikeBtn(){
+    const likeBtn = document.createElement('button');
+    likeBtn.classList.add('btn','btn-success','btn-sm','like');
+    likeBtn.textContent = 'Like';
+    return likeBtn;
+}
+
+function buildUnlikeBtn(){
+    const unlikeBtn = document.createElement('button');
+    unlikeBtn.classList.add('btn','btn-success','btn-sm','unlike');
+    unlikeBtn.textContent = 'Unlike';
+    return unlikeBtn;
+}
+
+function alreadyLiked(userId,post){
+    const likes = post.likes
+    likes.forEach(like =>{
+        if(like.likerId === userId){
+            return true;
+        }
+    })
+    return false;
+}
+function postLike(postId){
+    const action = "like"
+    fetch(`posts/likes/${parseInt(postId)}`, {
+        method: 'POST',
+        body: JSON.stringify({
+            action:action,
+            postId:postId
+        })
+      })
+      .then(response => response.json())
+      .then(result => {
+        console.log(result);
+        getPosts("allPosts");
+      })
+}
+function postUnlike(postId){
+    const action = "unlike"
+    fetch(`posts/likes/${parseInt(postId)}`, {
+        method: 'POST',
+        body: JSON.stringify({
+            action:action,
+            postId:postId
+        })
+      })
+      .then(response => response.json())
+      .then(result => {
+        console.log(result);
+        getPosts("allPosts");
+      })
+}
+
 
 function buildPosts(data,postList){
     // get the all-posts-divs, clear any existing html, and build header according to the postList
@@ -200,10 +254,27 @@ function buildPosts(data,postList){
         }else{
             postDiv = buildPostNoEdit(post);
         }
+        if(alreadyLiked(data.requestorId,post) === true){
+            const unlikeBtn = buildUnlikeBtn();
+            postDiv.appendChild(unlikeBtn);
+            postDiv.querySelector('.unlike').addEventListener('click',function(){
+                console.log('unlike');
+                postUnlike(post.id);
+            });
+        }else{
+            const likeBtn = buildLikeBtn();
+            postDiv.appendChild(likeBtn);
+            postDiv.querySelector('.like').addEventListener('click',function(){
+                console.log('like');
+                console.log(`postId: ${post.id}`);
+                postLike(post.id);
+             });
+        }
     const posterProfile = postDiv.querySelector('.poster-profile');
     posterProfile.addEventListener('click',function(){
         getProfilePage(post.posterId);
     })
+
     postView.append(postDiv);
     })
 }

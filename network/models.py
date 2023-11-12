@@ -35,7 +35,7 @@ class Like(models.Model):
             "id": self.id,
             "post_id": self.post.id,
             "poster_id": self.poster.id,
-            "like_id": self.liker.id
+            "liker_id": self.liker.id
         }
 
 

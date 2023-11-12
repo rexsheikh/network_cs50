@@ -1,3 +1,5 @@
 next...
-1. show whether following or not in all posts, conditionally render follow or unfollow. 
-2. get count for a user's profile 
+1. build out the likes route
+    - hide,unhide like and unlike buttons using js
+    - test 
+2. pagination
