@@ -10,6 +10,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django import forms
 from .models import User, Post, Follow, Like
+from django.core.paginator import Paginator
 
 
 class PostForm(forms.Form):
@@ -46,6 +47,7 @@ def likesToPosts(likes, posts):
     return posts
 
 
+# gets posts for allPosts and following views.
 @login_required
 @csrf_exempt
 def posts(request, postList):
@@ -90,7 +92,10 @@ def posts(request, postList):
             }
             return JsonResponse(data, safe=False)
 
+# gets posts for profile pages, noting whether the page is the user's and whether they are following that page (if it is not theirs)
 
+
+@login_required
 @csrf_exempt
 def profilePosts(request, profileId):
     profileId = int(profileId)
@@ -136,27 +141,10 @@ def profilePosts(request, profileId):
             follow.delete()
             return JsonResponse({"message": "Unfollow captured successfully."}, status=201)
 
-
-@csrf_exempt
-def following(request):
-    # I referenced https://stackoverflow.com/questions/37205793/django-values-list-vs-values
-    # to see how to get a list that the user is following
-    # I referenced https://docs.djangoproject.com/en/3.2/topics/db/queries/
-    # to see how to make queries that span a list using the double underscore notation
-    if request.method == "GET":
-        print("FOLLOWING VIEW")
-        following = Follow.objects.filter(
-            follower=request.user.id).values_list('followee_id', flat=True)
-        posts = [post.serialize()
-                 for post in Post.objects.filter(poster_id__in=following)]
-        likes = [like.serialize() for like in Like.objects.all()]
-        postsWithLikes = likesToPosts(likes, posts)
-        data = {
-            'posts': postsWithLikes
-        }
-        return JsonResponse(data, safe=False)
+# allows users to like a post
 
 
+@login_required
 @csrf_exempt
 def likes(request, postId):
     if request.method == "POST":
@@ -166,7 +154,6 @@ def likes(request, postId):
         poster = User.objects.get(id=post.poster.id)
         liker = User.objects.get(id=request.user.id)
         if action == "like":
-            # maybe check if already liked here?
             newLike = Like(post=post, poster=poster, liker=liker)
             newLike.save()
             return JsonResponse({"message": "Like captured successfully."}, status=201)
